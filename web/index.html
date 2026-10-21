@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PREMIERE CINEMA - Ticket Booking</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#121218;color:#e6e6e6;font-family:'Segoe UI',Arial,sans-serif;min-height:100vh}
+  /* Header - cinema marquee */
+  .header{background:#0c0c10;border-bottom:3px solid #d4af37;padding:18px 20px;text-align:center}
+  .header .logo{font-size:10px;color:#a08223;letter-spacing:2px}
+  .header h1{font-family:Georgia,serif;font-size:26px;color:#d4af37;letter-spacing:3px;margin:6px 0;font-weight:bold}
+  .header .sub{font-size:11px;color:#969696;letter-spacing:1px}
+  .header .est{font-size:10px;color:#666;font-style:italic;margin-top:8px}
+  .container{max-width:1100px;margin:18px auto;display:flex;gap:16px;padding:0 15px}
+  .form-card{flex:1;background:#1e1e26;border:1px solid #a08223;border-radius:4px;padding:22px;position:relative}
+  .form-card::before{content:"◉ BOOKING COUNTER";position:absolute;top:-10px;left:18px;background:#1e1e26;color:#d4af37;font-size:11px;font-weight:bold;padding:0 8px;letter-spacing:1px;border:1px solid #a08223}
+  .form-row{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:12px;margin-bottom:16px}
+  .form-row label{font-weight:700;font-size:13px;color:#e6e6e6}
+  .form-row input,.form-row select{background:#2a2a34;color:#e6e6e6;border:1px solid #a08223;border-radius:3px;padding:8px 10px;font-size:13px;width:100%}
+  .form-row input:focus,.form-row select:focus{outline:none;border-color:#d4af37;box-shadow:0 0 0 1px #d4af37}
+  .seat-options{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .seat-options label{font-weight:400;font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer}
+  .seat-options input[type=radio]{width:auto;accent-color:#d4af37}
+  .hint{font-size:10px;color:#8a8a8a;font-style:italic}
+  .price-box{font-family:Georgia,serif;font-size:20px;color:#d4af37;background:#2a2412;border:1px solid #a08223;padding:7px 12px;border-radius:3px;font-weight:bold;display:inline-block}
+  .btn-yellow{width:100%;background:#32323c;color:#e6e6e6;border:1px solid #a08223;padding:8px;border-radius:3px;cursor:pointer;font-size:11px;letter-spacing:1px}
+  .btn-yellow:hover{background:#3a3a44}
+  .bottom-actions{display:flex;gap:14px;justify-content:center;margin-top:18px;padding-top:14px;border-top:1px solid #333}
+  .btn-book{background:#d4af37;color:#111;border:2px solid #8c6d14;padding:11px 26px;font-family:Georgia,serif;font-weight:bold;font-size:14px;border-radius:3px;cursor:pointer;letter-spacing:1px}
+  .btn-book:hover{background:#e6c65c;transform:translateY(-1px)}
+  .btn-clear{background:#8b0000;color:#e6e6e6;border:1px solid #c01e1e;padding:11px 22px;font-size:13px;border-radius:3px;cursor:pointer}
+  .btn-clear:hover{background:#a00000}
+  /* Receipt - ticket stub */
+  .receipt-card{width:380px;background:#121218;border:1px solid #a08223;border-radius:4px;padding:16px;display:flex;flex-direction:column;position:relative}
+  .receipt-card::before{content:"✂ TICKET STUB";position:absolute;top:-10px;left:18px;background:#121218;color:#d4af37;font-size:11px;font-weight:bold;padding:0 8px;letter-spacing:1px;border:1px solid #a08223;font-family:monospace}
+  .receipt{flex:1;background:#fff8dc;color:#28140a;border:1px solid #a08223;border-radius:3px;padding:14px;font-family:'Courier New',monospace;font-size:12.5px;line-height:1.5;white-space:pre-wrap;min-height:420px;box-shadow:inset 0 0 10px rgba(0,0,0,0.08)}
+  .receipt-footer{text-align:center;font-size:10px;color:#8a6d3b;font-style:italic;margin-top:10px}
+  .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1e1e26;border:1px solid #d4af37;color:#d4af37;padding:14px 22px;border-radius:4px;display:none;z-index:99;box-shadow:0 4px 20px rgba(0,0,0,0.5);font-size:13px;max-width:90%}
+  .toast.show{display:block;animation:slideDown 0.3s}
+  @keyframes slideDown{from{transform:translate(-50%,-20px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+  @media(max-width:860px){.container{flex-direction:column}.receipt-card{width:100%}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">★ PREMIERE CINEMA ★</div>
+  <h1>MOVIE TICKET BOOKING</h1>
+  <div class="sub">Select your show &nbsp;•&nbsp; Choose your seats &nbsp;•&nbsp; Enjoy the magic</div>
+  <div class="est">EST. 2024 &nbsp;•&nbsp; Kampala</div>
+</div>
+
+<div class="container">
+  <div class="form-card">
+    <div style="height:10px"></div>
+    <div class="form-row"><label>Customer Name:</label><input id="customerName" placeholder="Your name as on ID" value="John Doe"></div>
+    <div class="form-row"><label>Select Movie:</label>
+      <select id="movieSelect">
+        <option value="0">Avengers: Endgame (Action) - $10.00</option>
+        <option value="1">The Lion King (Animation) - $8.00</option>
+        <option value="2">Inception (Sci-Fi) - $9.50</option>
+        <option value="3">Titanic (Romance) - $7.50</option>
+        <option value="4">Joker (Drama) - $9.00</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Show Time:</label>
+      <select id="showTime">
+        <option>10:00 AM  ☀ Matinee</option><option>01:00 PM  ☀ Afternoon</option><option>04:30 PM  🌇 Evening</option><option>08:00 PM  🌙 Prime Time</option><option>11:00 PM  🌃 Late Night</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Seat Type:</label>
+      <div class="seat-options">
+        <label><input type="radio" name="seat" value="Regular" checked> Regular</label>
+        <label><input type="radio" name="seat" value="Premium"> Premium +50%</label>
+        <label><input type="radio" name="seat" value="VIP"> VIP ×2</label>
+        <span class="hint">(VIP = recliner + popcorn)</span>
+      </div>
+    </div>
+    <div class="form-row"><label>No. of Tickets:</label><select id="tickets"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
+    <div class="form-row"><label>Total Price:</label><div><span class="price-box" id="priceDisplay">$10.00  •  1 × Regular</span></div></div>
+    <div class="form-row"><label></label><button class="btn-yellow" onclick="calcPrice()">⟳ &nbsp;RECALCULATE PRICE</button></div>
+    <div class="bottom-actions">
+      <button class="btn-book" onclick="bookTicket()">★ &nbsp;BOOK TICKET&nbsp; ★</button>
+      <button class="btn-clear" onclick="clearForm()">CLEAR</button>
+    </div>
+  </div>
+
+  <div class="receipt-card">
+    <div style="height:10px"></div>
+    <div class="receipt" id="receipt">   ┌──────────────────────┐
+   │  NO BOOKING YET      │
+   └──────────────────────┘
+   Fill details & BOOK!
+   ──────────────────────
+   Regular  x1.0
+   Premium  x1.5  ★ recom.
+   VIP      x2.0  ★★ luxe
+   ──────────────────────
+   Tip: Try Joker VIP x2!</div>
+    <div class="receipt-footer">Keep this stub for entry &nbsp;•&nbsp; Non-transferable</div>
+    <div style="text-align:center;margin-top:8px;font-size:10px;color:#555">Java: Movie.java • Booking.java • MovieTicketBookingApp.java</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const movies=[
+ {id:1,title:"Avengers: Endgame",genre:"Action",duration:"3h 01m",basePrice:10.00},
+ {id:2,title:"The Lion King",genre:"Animation",duration:"1h 58m",basePrice:8.00},
+ {id:3,title:"Inception",genre:"Sci-Fi",duration:"2h 28m",basePrice:9.50},
+ {id:4,title:"Titanic",genre:"Romance",duration:"3h 15m",basePrice:7.50},
+ {id:5,title:"Joker",genre:"Drama",duration:"2h 02m",basePrice:9.00},
+];
+let bookingCounter=1001;
+function getSeat(){return document.querySelector('input[name="seat"]:checked').value}
+function calcPrice(){
+ const m=movies[document.getElementById('movieSelect').value];
+ const t=parseInt(document.getElementById('tickets').value);
+ let mult=1.0; if(getSeat()=="Premium") mult=1.5; else if(getSeat()=="VIP") mult=2.0;
+ const total=m.basePrice*mult*t;
+ document.getElementById('priceDisplay').textContent="$"+total.toFixed(2)+"  •  "+t+" × "+getSeat();
+ return total;
+}
+function showToast(msg, isError){
+ const el=document.getElementById('toast');
+ el.textContent=msg; el.style.borderColor=isError?'#c01e1e':'#d4af37'; el.style.color=isError?'#ff6b6b':'#d4af37';
+ el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3000);
+}
+document.getElementById('movieSelect').addEventListener('change',calcPrice);
+document.getElementById('tickets').addEventListener('change',calcPrice);
+document.querySelectorAll('input[name="seat"]').forEach(r=>r.addEventListener('change',calcPrice));
+function bookTicket(){
+ const name=document.getElementById('customerName').value.trim();
+ if(!name){showToast("⚠️ Please enter your name!",true);return;}
+ const m=movies[document.getElementById('movieSelect').value];
+ const show=document.getElementById('showTime').value;
+ const seat=getSeat(); const tickets=parseInt(document.getElementById('tickets').value);
+ const total=calcPrice(); const bookingId="BKG"+bookingCounter++;
+ const receipt=`==================================
+      MOVIE TICKET RECEIPT         
+==================================
+Booking ID   : ${bookingId}
+Customer     : ${name}
+----------------------------------
+Movie        : ${m.title}
+Genre        : ${m.genre}
+Duration     : ${m.duration}
+Show Time    : ${show}
+Seat Type    : ${seat}
+Tickets      : ${tickets}
+Price/Ticket : $${m.basePrice.toFixed(2)}
+----------------------------------
+TOTAL AMOUNT : $${total.toFixed(2)}
+==================================
+  Thank you! Enjoy your movie! :) 
+==================================`;
+ document.getElementById('receipt').textContent=receipt;
+ showToast("★ BOOKING CONFIRMED! "+bookingId+" — $"+total.toFixed(2)+" — Enjoy the show! ★",false);
+}
+function clearForm(){
+ document.getElementById('customerName').value="";
+ document.getElementById('movieSelect').selectedIndex=0;
+ document.getElementById('showTime').selectedIndex=0;
+ document.querySelector('input[value="Regular"]').checked=true;
+ document.getElementById('tickets').value=1;
+ document.getElementById('receipt').textContent="   ┌──────────────────────┐\n   │  FORM CLEARED        │\n   └──────────────────────┘\n   Ready for next guest!\n   ──────────────────────\n   Regular  x1.0\n   Premium  x1.5\n   VIP      x2.0";
+ calcPrice(); showToast("Form cleared — ready for next guest",false);
+}
+calcPrice();
+</script>
+</body>
+</html>

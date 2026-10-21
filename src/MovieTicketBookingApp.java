@@ -1,101 +1,69 @@
 
 import javax.swing.*;
+import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * MovieTicketBookingApp.java
- * --------------------------
- * This is the MAIN class - it creates the GUI using Java Swing.
- * Swing is Java's built-in library for making windows, buttons, dropdowns etc.
- *
- * Features:
- * 1. Select Movie from dropdown
- * 2. Select Show Time
- * 3. Choose Seat Type (Regular/Premium/VIP)
- * 4. Choose number of tickets
- * 5. Enter customer name
- * 6. See live price update
- * 7. Book ticket and get receipt
- * 8. Clear/Reset form
- *
- * This class extends JFrame (which is a window)
+ * MovieTicketBookingApp.java - THEATER DARK EDITION
+ * ------------------------------------------------
+ * Real cinema vibe: dark charcoal walls, gold lights, red velvet.
+ * Like you're inside a theater lobby booking at the counter.
+ * Still 100% basic Java Swing - no external libs.
  */
 public class MovieTicketBookingApp extends JFrame {
 
-    // === GUI Components (declare at top so we can use them in all methods) ===
-
-    // Dropdown to select movie
+    // === GUI Components ===
     private JComboBox<Movie> movieComboBox;
-
-    // Dropdown to select show time
     private JComboBox<String> showTimeComboBox;
-
-    // Radio buttons for seat type (only one can be selected)
     private JRadioButton regularRadio;
     private JRadioButton premiumRadio;
     private JRadioButton vipRadio;
-
-    // Group to make radio buttons mutually exclusive
     private ButtonGroup seatGroup;
-
-    // Spinner to select number of tickets (1 to 10)
     private JSpinner ticketSpinner;
-
-    // Text field for customer name
     private JTextField nameField;
-
-    // Label to show calculated price (live update)
     private JLabel priceLabel;
-
-    // Buttons
     private JButton bookButton;
     private JButton clearButton;
-    private JButton priceButton; // extra button to calculate price
-
-    // Text area to show receipt
+    private JButton priceButton;
     private JTextArea receiptArea;
-
-    // Array of movies (sample data)
     private Movie[] movies;
 
-    /**
-     * Constructor - this runs when we create new MovieTicketBookingApp()
-     * It sets up the whole window and its components
-     */
-    public MovieTicketBookingApp() {
-        // Call parent JFrame constructor and set window title
-        super("Movie Ticket Booking System");
+    // === THEATER COLORS (cinema palette) ===
+    private final Color BG_DARK     = new Color(18, 18, 24);     // main window bg - near black
+    private final Color PANEL_DARK  = new Color(30, 30, 38);     // form panels - charcoal
+    private final Color HEADER_BG   = new Color(12, 12, 16);     // header - deeper black
+    private final Color GOLD        = new Color(212, 175, 55);   // cinema gold
+    private final Color GOLD_DIM    = new Color(160, 130, 35);   // dim gold for borders
+    private final Color RED_VELVET  = new Color(139, 0, 0);     // velvet red
+    private final Color RED_LIGHT   = new Color(192, 30, 30);   // lighter red
+    private final Color TEXT_WHITE  = new Color(230, 230, 230); // off-white
+    private final Color INPUT_BG    = new Color(42, 42, 52);    // input fields
+    private final Color RECEIPT_BG  = new Color(255, 248, 220); // ticket stub beige
 
-        // Step 1: Prepare sample movie data
+    public MovieTicketBookingApp() {
+        super("CINEMA PREMIERE - Movie Ticket Booking");
         createSampleMovies();
 
-        // Step 2: Set up the window properties
-        setSize(900, 650); // Window size: width 900, height 650
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Close app when X is clicked
-        setLocationRelativeTo(null); // Center window on screen
-        setLayout(new BorderLayout(10, 10)); // Main layout with 10px gaps
+        // Window properties - bigger, cinematic
+        setSize(1000, 700);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(0, 0));
+        getContentPane().setBackground(BG_DARK); // dark theater bg
 
-        // Step 3: Create all panels and add to window
-        add(createHeaderPanel(), BorderLayout.NORTH);   // Top header
-        add(createFormPanel(), BorderLayout.CENTER);    // Center form
-        add(createReceiptPanel(), BorderLayout.EAST);   // Right side receipt
-        add(createButtonPanel(), BorderLayout.SOUTH);   // Bottom buttons
+        // Build theater layout
+        add(createHeaderPanel(), BorderLayout.NORTH);
+        add(createFormPanel(), BorderLayout.CENTER);
+        add(createReceiptPanel(), BorderLayout.EAST);
+        add(createButtonPanel(), BorderLayout.SOUTH);
 
-        // Step 4: Add listeners (what happens when buttons are clicked)
         addEventListeners();
-
-        // Step 5: Do one initial price calculation
         updatePriceDisplay();
     }
 
-    /**
-     * Creates sample movie data
-     * In real app this would come from database, here we hardcode for simplicity
-     */
     private void createSampleMovies() {
-        // Create 5 sample movies with id, title, genre, duration, basePrice
         movies = new Movie[5];
         movies[0] = new Movie(1, "Avengers: Endgame", "Action", "3h 01m", 10.00);
         movies[1] = new Movie(2, "The Lion King", "Animation", "1h 58m", 8.00);
@@ -104,299 +72,356 @@ public class MovieTicketBookingApp extends JFrame {
         movies[4] = new Movie(5, "Joker", "Drama", "2h 02m", 9.00);
     }
 
-    /**
-     * Creates top header panel with title
-     * @return JPanel with header
-     */
+    // === HEADER - cinema marquee ===
     private JPanel createHeaderPanel() {
-        // Create panel with background color
-        JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(new Color(30, 30, 120)); // Dark blue background
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10)); // Padding
-
-        // Create title label
-        JLabel titleLabel = new JLabel("🎬  MOVIE TICKET BOOKING SYSTEM  🎬");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 22)); // Font style
-        titleLabel.setForeground(Color.WHITE); // White text
-
-        headerPanel.add(titleLabel); // Add label to panel
-        return headerPanel;
-    }
-
-    /**
-     * Creates center form panel with all inputs
-     * @return JPanel with form fields
-     */
-    private JPanel createFormPanel() {
-        // Main form panel with GridLayout (6 rows, 2 columns) + gaps
-        JPanel formPanel = new JPanel(new GridLayout(7, 2, 10, 15));
-        formPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.GRAY), " Booking Details "));
-        formPanel.setBackground(Color.WHITE);
-        formPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(15, 15, 15, 15), // Outer padding
-                BorderFactory.createTitledBorder("Booking Details") // Inner titled border
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(HEADER_BG);
+        header.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 3, 0, GOLD), // gold bottom line
+            BorderFactory.createEmptyBorder(18, 20, 18, 20)
         ));
 
+        // Left: small logo text
+        JLabel logo = new JLabel("★ PREMIERE CINEMA ★");
+        logo.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        logo.setForeground(GOLD_DIM);
+        logo.setHorizontalAlignment(SwingConstants.LEFT);
+
+        // Center: main title gold like theater sign
+        JLabel title = new JLabel("MOVIE TICKET BOOKING", SwingConstants.CENTER);
+        title.setFont(new Font("Serif", Font.BOLD, 26));
+        title.setForeground(GOLD);
+        // Add slight shadow effect via border
+
+        // Right: decorative
+        JLabel deco = new JLabel("EST. 2024  •  Kampala", SwingConstants.RIGHT);
+        deco.setFont(new Font("SansSerif", Font.ITALIC, 10));
+        deco.setForeground(new Color(120, 120, 120));
+
+        // Top row with subtitle
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setOpaque(false);
+        titlePanel.add(logo, BorderLayout.NORTH);
+        titlePanel.add(title, BorderLayout.CENTER);
+        
+        JLabel sub = new JLabel("Select your show  •  Choose your seats  •  Enjoy the magic", SwingConstants.CENTER);
+        sub.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        sub.setForeground(new Color(150, 150, 150));
+        sub.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
+        titlePanel.add(sub, BorderLayout.SOUTH);
+
+        header.add(titlePanel, BorderLayout.CENTER);
+        header.add(deco, BorderLayout.SOUTH);
+        return header;
+    }
+
+    // === FORM - dark theater counter ===
+    private JPanel createFormPanel() {
+        JPanel formPanel = new JPanel(new GridLayout(7, 2, 14, 16));
+        formPanel.setBackground(PANEL_DARK);
+        // Gold titled border like cinema frame
+        TitledBorder tb = BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(GOLD_DIM, 1), "  ◉  BOOKING COUNTER  "
+        );
+        tb.setTitleColor(GOLD);
+        tb.setTitleFont(new Font("SansSerif", Font.BOLD, 12));
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(20, 20, 20, 20), tb
+        ));
+
+        // Helper to style labels - off-white on dark
         // --- 1. Customer Name ---
-        formPanel.add(new JLabel("Customer Name:")); // Left label
-        nameField = new JTextField(); // Right input field
-        nameField.setToolTipText("Enter your full name"); // Hint on hover
+        JLabel l1 = makeLabel("Customer Name:");
+        formPanel.add(l1);
+        nameField = new JTextField();
+        styleInput(nameField);
+        nameField.setToolTipText("Your name as on ID");
         formPanel.add(nameField);
 
-        // --- 2. Movie Selection ---
-        formPanel.add(new JLabel("Select Movie:"));
-        movieComboBox = new JComboBox<>(movies); // Dropdown filled with movies array
+        // --- 2. Movie ---
+        formPanel.add(makeLabel("Select Movie:"));
+        movieComboBox = new JComboBox<>(movies);
+        styleCombo(movieComboBox);
         formPanel.add(movieComboBox);
 
-        // --- 3. Show Time Selection ---
-        formPanel.add(new JLabel("Show Time:"));
-        String[] showTimes = {"10:00 AM", "01:00 PM", "04:30 PM", "08:00 PM", "11:00 PM"};
-        showTimeComboBox = new JComboBox<>(showTimes); // Dropdown for times
+        // --- 3. Show Time ---
+        formPanel.add(makeLabel("Show Time:"));
+        String[] times = {"10:00 AM  ☀ Matinee", "01:00 PM  ☀ Afternoon", "04:30 PM  🌇 Evening", "08:00 PM  🌙 Prime Time", "11:00 PM  🌃 Late Night"};
+        showTimeComboBox = new JComboBox<>(times);
+        styleCombo(showTimeComboBox);
         formPanel.add(showTimeComboBox);
 
-        // --- 4. Seat Type (Radio Buttons) ---
-        formPanel.add(new JLabel("Seat Type:"));
-        JPanel seatPanel = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Small panel for radios
-        seatPanel.setBackground(Color.WHITE);
-        regularRadio = new JRadioButton("Regular ($1.0x)", true); // Default selected
-        premiumRadio = new JRadioButton("Premium ($1.5x)");
-        vipRadio = new JRadioButton("VIP ($2.0x)");
-
-        // Group them so only one can be selected
+        // --- 4. Seat Type ---
+        formPanel.add(makeLabel("Seat Type:"));
+        JPanel seatPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
+        seatPanel.setBackground(PANEL_DARK);
+        regularRadio = new JRadioButton("Regular", true);
+        premiumRadio = new JRadioButton("Premium +50%");
+        vipRadio = new JRadioButton("VIP ×2");
+        styleRadio(regularRadio); styleRadio(premiumRadio); styleRadio(vipRadio);
         seatGroup = new ButtonGroup();
-        seatGroup.add(regularRadio);
-        seatGroup.add(premiumRadio);
-        seatGroup.add(vipRadio);
-
-        seatPanel.add(regularRadio);
-        seatPanel.add(premiumRadio);
-        seatPanel.add(vipRadio);
+        seatGroup.add(regularRadio); seatGroup.add(premiumRadio); seatGroup.add(vipRadio);
+        seatPanel.add(regularRadio); seatPanel.add(premiumRadio); seatPanel.add(vipRadio);
+        // Add hint
+        JLabel hint = new JLabel("  (VIP = recliner + popcorn)");
+        hint.setFont(new Font("SansSerif", Font.ITALIC, 10));
+        hint.setForeground(new Color(140, 140, 140));
+        seatPanel.add(hint);
         formPanel.add(seatPanel);
 
-        // --- 5. Number of Tickets (Spinner: 1 to 10, step 1) ---
-        formPanel.add(new JLabel("No. of Tickets:"));
-        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, 10, 1); // value, min, max, step
-        ticketSpinner = new JSpinner(spinnerModel);
+        // --- 5. Tickets ---
+        formPanel.add(makeLabel("No. of Tickets:"));
+        SpinnerNumberModel sm = new SpinnerNumberModel(1, 1, 10, 1);
+        ticketSpinner = new JSpinner(sm);
+        styleSpinner(ticketSpinner);
         formPanel.add(ticketSpinner);
 
-        // --- 6. Price Display ---
-        formPanel.add(new JLabel("Total Price:"));
-        priceLabel = new JLabel("$0.00"); // Will be updated dynamically
-        priceLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        priceLabel.setForeground(new Color(0, 128, 0)); // Green color
+        // --- 6. Price ---
+        formPanel.add(makeLabel("Total Price:"));
+        priceLabel = new JLabel("$0.00");
+        priceLabel.setFont(new Font("Serif", Font.BOLD, 22));
+        priceLabel.setForeground(GOLD); // gold price like theater
+        priceLabel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(GOLD_DIM, 1),
+            BorderFactory.createEmptyBorder(6, 12, 6, 12)
+        ));
+        priceLabel.setOpaque(true);
+        priceLabel.setBackground(new Color(42, 36, 18)); // dark gold bg
         formPanel.add(priceLabel);
 
-        // --- 7. Extra: Calculate Price Button ---
-        formPanel.add(new JLabel("")); // Empty cell
-        priceButton = new JButton("Calculate Price");
-        priceButton.setBackground(new Color(255, 193, 7)); // Yellow button
+        // --- 7. Calculate ---
+        formPanel.add(new JLabel()); // empty
+        priceButton = new JButton("⟳  RECALCULATE PRICE");
+        priceButton.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        priceButton.setBackground(new Color(50, 50, 60));
+        priceButton.setForeground(TEXT_WHITE);
+        priceButton.setBorder(BorderFactory.createLineBorder(GOLD_DIM, 1));
+        priceButton.setFocusPainted(false);
         formPanel.add(priceButton);
 
         return formPanel;
     }
 
-    /**
-     * Creates right side receipt panel
-     * @return JPanel with receipt area
-     */
+    // Helper: make gold-tinted label
+    private JLabel makeLabel(String txt) {
+        JLabel l = new JLabel(txt);
+        l.setFont(new Font("SansSerif", Font.BOLD, 13));
+        l.setForeground(TEXT_WHITE);
+        return l;
+    }
+    // Helper: style text fields dark
+    private void styleInput(JTextField f) {
+        f.setBackground(INPUT_BG);
+        f.setForeground(TEXT_WHITE);
+        f.setCaretColor(GOLD);
+        f.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(GOLD_DIM, 1),
+            BorderFactory.createEmptyBorder(6, 8, 6, 8)
+        ));
+    }
+    private void styleCombo(JComboBox<?> cb) {
+        cb.setBackground(INPUT_BG);
+        cb.setForeground(TEXT_WHITE);
+        ((JComponent)cb.getRenderer()).setOpaque(true);
+        cb.setBorder(BorderFactory.createLineBorder(GOLD_DIM, 1));
+        // Make dropdown items readable
+        cb.setRenderer(new DefaultListCellRenderer() {
+            @Override public Component getListCellRendererComponent(JList<?> list, Object val, int idx, boolean sel, boolean foc) {
+                super.getListCellRendererComponent(list, val, idx, sel, foc);
+                setBackground(sel ? GOLD : INPUT_BG);
+                setForeground(sel ? Color.BLACK : TEXT_WHITE);
+                setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+                return this;
+            }
+        });
+    }
+    private void styleRadio(JRadioButton rb) {
+        rb.setBackground(PANEL_DARK);
+        rb.setForeground(TEXT_WHITE);
+        rb.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        rb.setFocusPainted(false);
+    }
+    private void styleSpinner(JSpinner sp) {
+        sp.setBorder(BorderFactory.createLineBorder(GOLD_DIM, 1));
+        JComponent editor = sp.getEditor();
+        editor.setBackground(INPUT_BG);
+        // spinner text field
+        if (editor instanceof JSpinner.DefaultEditor) {
+            JTextField tf = ((JSpinner.DefaultEditor)editor).getTextField();
+            tf.setBackground(INPUT_BG);
+            tf.setForeground(TEXT_WHITE);
+            tf.setCaretColor(GOLD);
+        }
+    }
+
+    // === RECEIPT - ticket stub ===
     private JPanel createReceiptPanel() {
         JPanel receiptPanel = new JPanel(new BorderLayout());
-        receiptPanel.setPreferredSize(new Dimension(380, 0)); // Fixed width 380px
-        receiptPanel.setBorder(BorderFactory.createTitledBorder(" Your Receipt "));
+        receiptPanel.setPreferredSize(new Dimension(380, 0));
+        receiptPanel.setBackground(BG_DARK);
+        TitledBorder tb = BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(GOLD_DIM, 1), "  ✂  TICKET STUB  "
+        );
+        tb.setTitleColor(GOLD);
+        tb.setTitleFont(new Font("Monospaced", Font.BOLD, 11));
+        receiptPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(10, 10, 10, 15), tb
+        ));
 
-        // Text area to show receipt (non-editable)
         receiptArea = new JTextArea();
-        receiptArea.setEditable(false); // User cannot type here
-        receiptArea.setFont(new Font("Monospaced", Font.PLAIN, 12)); // Monospaced for alignment
-        receiptArea.setText("  No booking yet...\n  Fill details and click BOOK!\n\n  --------------------------------\n  Prices:\n  Regular = Base Price x 1.0\n  Premium = Base Price x 1.5\n  VIP     = Base Price x 2.0\n");
+        receiptArea.setEditable(false);
+        receiptArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        receiptArea.setBackground(RECEIPT_BG);
+        receiptArea.setForeground(new Color(40, 20, 10)); // dark brown text on beige
+        receiptArea.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        receiptArea.setText(
+            "   ┌──────────────────────┐\n" +
+            "   │  NO BOOKING YET      │\n" +
+            "   └──────────────────────┘\n" +
+            "   Fill details & BOOK!\n" +
+            "   ──────────────────────\n" +
+            "   Regular  x1.0\n" +
+            "   Premium  x1.5  ★ recom.\n" +
+            "   VIP      x2.0  ★★ luxe\n" +
+            "   ──────────────────────\n" +
+            "   Tip: Try Joker VIP x2!"
+        );
 
-        // Scroll pane so if text is long, user can scroll
-        JScrollPane scrollPane = new JScrollPane(receiptArea);
-        receiptPanel.add(scrollPane, BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(receiptArea);
+        scroll.setBorder(BorderFactory.createLineBorder(GOLD_DIM, 1));
+        scroll.getViewport().setBackground(RECEIPT_BG);
 
+        // Footer note
+        JLabel footer = new JLabel("Keep this stub for entry  •  Non-transferable", SwingConstants.CENTER);
+        footer.setFont(new Font("SansSerif", Font.ITALIC, 10));
+        footer.setForeground(new Color(120, 100, 60));
+        footer.setBorder(BorderFactory.createEmptyBorder(8, 0, 2, 0));
+        footer.setOpaque(false);
+
+        receiptPanel.add(scroll, BorderLayout.CENTER);
+        receiptPanel.add(footer, BorderLayout.SOUTH);
         return receiptPanel;
     }
 
-    /**
-     * Creates bottom button panel (Book and Clear)
-     * @return JPanel with buttons
-     */
+    // === BUTTONS - theater lobby ===
     private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10)); // Centered with gaps
-        buttonPanel.setBackground(new Color(240, 240, 240));
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 14));
+        btnPanel.setBackground(HEADER_BG);
+        btnPanel.setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, GOLD));
 
-        // Book button - green
-        bookButton = new JButton("  BOOK TICKET  ");
-        bookButton.setFont(new Font("Arial", Font.BOLD, 14));
-        bookButton.setBackground(new Color(40, 167, 69)); // Green
-        bookButton.setForeground(Color.WHITE);
+        // BOOK - gold premiere button
+        bookButton = new JButton("  ★  BOOK TICKET  ★  ");
+        bookButton.setFont(new Font("Serif", Font.BOLD, 14));
+        bookButton.setBackground(GOLD);
+        bookButton.setForeground(Color.BLACK);
+        bookButton.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(140, 110, 20), 2),
+            BorderFactory.createEmptyBorder(10, 24, 10, 24)
+        ));
         bookButton.setFocusPainted(false);
+        bookButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Clear button - red
-        clearButton = new JButton("  CLEAR FORM  ");
-        clearButton.setFont(new Font("Arial", Font.BOLD, 14));
-        clearButton.setBackground(new Color(220, 53, 69)); // Red
-        clearButton.setForeground(Color.WHITE);
+        // CLEAR - velvet red
+        clearButton = new JButton("  CLEAR  ");
+        clearButton.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        clearButton.setBackground(RED_VELVET);
+        clearButton.setForeground(TEXT_WHITE);
+        clearButton.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(RED_LIGHT, 1),
+            BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
         clearButton.setFocusPainted(false);
+        clearButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        buttonPanel.add(bookButton);
-        buttonPanel.add(clearButton);
-
-        return buttonPanel;
+        btnPanel.add(bookButton);
+        btnPanel.add(clearButton);
+        return btnPanel;
     }
 
-    /**
-     * Adds event listeners to buttons
-     * This defines what happens when user clicks buttons
-     */
     private void addEventListeners() {
-
-        // --- Book Button Click ---
         bookButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleBooking(); // Call booking method
-            }
+            @Override public void actionPerformed(ActionEvent e) { handleBooking(); }
         });
-
-        // --- Clear Button Click ---
         clearButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clearForm(); // Call clear method
-            }
+            @Override public void actionPerformed(ActionEvent e) { clearForm(); }
         });
-
-        // --- Calculate Price Button Click ---
         priceButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updatePriceDisplay(); // Update price label
-            }
+            @Override public void actionPerformed(ActionEvent e) { updatePriceDisplay(); }
         });
-
-        // --- Live price update when movie changes ---
         movieComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updatePriceDisplay();
-            }
+            @Override public void actionPerformed(ActionEvent e) { updatePriceDisplay(); }
         });
-
-        // --- Live price update when ticket count changes ---
         ticketSpinner.addChangeListener(e -> updatePriceDisplay());
-
-        // --- Live price update when seat type changes ---
         regularRadio.addActionListener(e -> updatePriceDisplay());
         premiumRadio.addActionListener(e -> updatePriceDisplay());
         vipRadio.addActionListener(e -> updatePriceDisplay());
     }
 
-    /**
-     * Gets currently selected seat type as String
-     * @return "Regular" or "Premium" or "VIP"
-     */
     private String getSelectedSeatType() {
-        if (premiumRadio.isSelected()) {
-            return "Premium";
-        } else if (vipRadio.isSelected()) {
-            return "VIP";
-        } else {
-            return "Regular"; // Default
-        }
+        if (premiumRadio.isSelected()) return "Premium";
+        else if (vipRadio.isSelected()) return "VIP";
+        else return "Regular";
     }
 
-    /**
-     * Calculates and shows price in priceLabel
-     * Called whenever user changes movie/seats/tickets
-     */
     private void updatePriceDisplay() {
-        // Get selected movie from dropdown
-        Movie selectedMovie = (Movie) movieComboBox.getSelectedItem();
-        if (selectedMovie == null) return; // Safety check
-
-        // Get number of tickets from spinner
+        Movie m = (Movie) movieComboBox.getSelectedItem();
+        if (m == null) return;
         int tickets = (Integer) ticketSpinner.getValue();
-
-        // Get seat type
-        String seatType = getSelectedSeatType();
-
-        // Calculate multiplier
-        double multiplier = 1.0;
-        if (seatType.equals("Premium")) multiplier = 1.5;
-        else if (seatType.equals("VIP")) multiplier = 2.0;
-
-        // Calculate total: basePrice * multiplier * tickets
-        double total = selectedMovie.getBasePrice() * multiplier * tickets;
-
-        // Show in label with 2 decimal places
-        priceLabel.setText("$" + String.format("%.2f", total));
+        String seat = getSelectedSeatType();
+        double mult = 1.0;
+        if (seat.equals("Premium")) mult = 1.5;
+        else if (seat.equals("VIP")) mult = 2.0;
+        double total = m.getBasePrice() * mult * tickets;
+        priceLabel.setText("$" + String.format("%.2f", total) + "  •  " + tickets + " × " + seat);
     }
 
-    /**
-     * Handles booking logic when BOOK button is clicked
-     */
     private void handleBooking() {
-        // 1. Validate customer name (must not be empty)
-        String customerName = nameField.getText().trim(); // trim removes extra spaces
-        if (customerName.isEmpty()) {
-            // Show error popup
-            JOptionPane.showMessageDialog(this,
-                    "Please enter your name!",
-                    "Input Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return; // Stop here, don't book
+        String name = nameField.getText().trim();
+        if (name.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter your name!", "Missing Name", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-
-        // 2. Get all selected values
-        Movie selectedMovie = (Movie) movieComboBox.getSelectedItem();
-        String showTime = (String) showTimeComboBox.getSelectedItem();
-        String seatType = getSelectedSeatType();
+        Movie selMovie = (Movie) movieComboBox.getSelectedItem();
+        String show = (String) showTimeComboBox.getSelectedItem();
+        String seat = getSelectedSeatType();
         int tickets = (Integer) ticketSpinner.getValue();
-
-        // 3. Create a Booking object (uses Booking class)
-        Booking booking = new Booking(customerName, selectedMovie, showTime, seatType, tickets);
-
-        // 4. Generate receipt and show in text area
-        String receipt = booking.generateReceipt();
-        receiptArea.setText(receipt);
-
-        // 5. Show success popup
+        Booking booking = new Booking(name, selMovie, show, seat, tickets);
+        receiptArea.setText(booking.generateReceipt());
+        // Gold success popup feel
         JOptionPane.showMessageDialog(this,
-                "Booking Successful!\nBooking ID: " + booking.getBookingId() +
-                        "\nTotal: $" + String.format("%.2f", booking.getTotalPrice()),
-                "Success",
-                JOptionPane.INFORMATION_MESSAGE);
+            "BOOKING CONFIRMED! ★\n\nBooking ID: " + booking.getBookingId() +
+            "\nMovie: " + selMovie.getTitle() +
+            "\nTotal: $" + String.format("%.2f", booking.getTotalPrice()) +
+            "\n\nEnjoy the show!",
+            "Premiere Cinema - Success", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Clears/resets the form to default values
-     */
     private void clearForm() {
-        nameField.setText(""); // Clear name
-        movieComboBox.setSelectedIndex(0); // First movie
-        showTimeComboBox.setSelectedIndex(0); // First show time
-        regularRadio.setSelected(true); // Regular seat
-        ticketSpinner.setValue(1); // 1 ticket
-        receiptArea.setText("  Form cleared!\n  Ready for new booking...\n\n  --------------------------------\n  Prices:\n  Regular = Base Price x 1.0\n  Premium = Base Price x 1.5\n  VIP     = Base Price x 2.0\n");
-        updatePriceDisplay(); // Reset price
+        nameField.setText("");
+        movieComboBox.setSelectedIndex(0);
+        showTimeComboBox.setSelectedIndex(0);
+        regularRadio.setSelected(true);
+        ticketSpinner.setValue(1);
+        receiptArea.setText(
+            "   ┌──────────────────────┐\n" +
+            "   │  FORM CLEARED        │\n" +
+            "   └──────────────────────┘\n" +
+            "   Ready for next guest!\n" +
+            "   ──────────────────────\n" +
+            "   Regular  x1.0\n" +
+            "   Premium  x1.5\n" +
+            "   VIP      x2.0\n"
+        );
+        updatePriceDisplay();
     }
 
-    /**
-     * Main method - entry point of program
-     * This is where Java starts execution
-     * @param args command line arguments (not used)
-     */
     public static void main(String[] args) {
-        // SwingUtilities.invokeLater ensures GUI is created on correct thread (Event Dispatch Thread)
-        // This is best practice for Swing apps
+        // Try to set system look for better dark rendering (basic, not complicated)
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception ignored) {}
         SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                // Create and show the app window
+            @Override public void run() {
                 MovieTicketBookingApp app = new MovieTicketBookingApp();
-                app.setVisible(true); // Make window visible
+                app.setVisible(true);
             }
         });
     }
